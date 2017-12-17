@@ -111,13 +111,14 @@ public class AStarParking {
         //3.Meter Nodo inicial en Abierta
         listaAbierta.add(nodoInit);
 
-        boolean exito = false;
+        boolean exito = true;
+        boolean expandir = false;
 
         while(listaAbierta.isEmpty() || exito){
 
             listaCerrada.add(listaAbierta.get(0));//copiar el primer elemento de lista abierta y ponerlo en cerrada
             listaAbierta.remove(0);//quitar el elemento copiado a cerrada de lista abierta
-
+            
             exito = checkExito(listaCerrada.get(0).parkingActual, listaCerrada.get(0).parkingFinal, st, pl);
             if(exito) break;
             else{
@@ -125,7 +126,7 @@ public class AStarParking {
                 //todos los posibles estados a partir de los posibles movimientos de un coche
                 for(int i = 0; i < st; i++ ){
                     for(int j = 0; j < pl; j++ ){//para cada coche...
-                    	NodoEstado estadoActual = new NodoEstado(listaCerrada.get(0).parkingActual, listaCerrada.get(0));
+                    	NodoEstado estadoActual = new NodoEstado(listaCerrada.get(0).parkingActual, listaCerrada.get(0), parkingObjetivo);
                         int movimientosDer = 1;
                         int movimientosIzq = 1;
                         int calleEntraFrente = 0;
@@ -133,20 +134,48 @@ public class AStarParking {
                     	for(int k = 0; k < st; k++ ){//operar con todas las demas posiciones
                             for(int l = 0; l < pl; l++ ){
 
-                            	//TODO LOS OPERADORES POR CADA MOVIMIENTO QUE HACEN DEBEN DEVOLVER UNA CONFIGURACIÃ“N NUEVA!!!!!!!
+                            	//TODO LOS OPERADORES POR CADA MOVIMIENTO QUE HACEN DEBEN DEVOLVER UNA CONFIGURACION NUEVA!!!!!!!
                             	
 	                           if(k != i && l != j){//Si no se trada de la misma casilla del coche que estÃ¡ siendo evaluado
 	                        	   
 	                        	   //GENERAR ESTADOS DE MOVER A DERECHA
 	                        	   while(movimientosDer < pl){
-	                        		   //[NUEVO ESTADO DE PARKING] = estadoActual.moverDerecha(movimientosDer, k, l);
-	                        		   movimientosDer += movimientosDer;
+	                        	        NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
+	                        	        expandir = NodoEstado.moverDerecha(movimientosDer, k, l);
+	                        	        
+	                        	        if(expandir) {
+	                        	        	nodoExpansion.prev = listaCerrada.get(0);
+		                        	        listaCerrada.get(0).next = nodoExpansion;
+		                        	        listaAbierta.add(0, nodoExpansion);
+	                        	        }
+	                        	        
+	                        	        /*Para cada s de S que estuviera ya en ABIERTA o CERRADA
+	                        	        decidir si redirigir o no sus punteros hacia N
+	                        	        Para cada s de S que estuviera ya en CERRADA
+	                        	        decidir si redirigir o no los punteros de los nodos en sus sub´arboles
+	                        	        Reordenar ABIERTA segun f (n)*/
+	                        	        
+	                        		   movimientosDer ++;
 	                        	   }
 	                        	   
 	                        	   //GENERAR ESTADOS DE MOVER A IZDA
 	                        	   while(movimientosIzq > 0){
-	                        		   //[NUEVO ESTADO DE PARKING] = estadoActual.moverIzquierda(movimientosIzq, k, l);
-	                        		   movimientosDer += movimientosIzq;
+	                        		    NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
+	                        	        expandir = NodoEstado.moverIzda(movimientosIzq, k, l);
+	                        	        
+	                        	        if(expandir) {
+	                        	        	nodoExpansion.prev = listaCerrada.get(0);
+		                        	        listaCerrada.get(0).next = nodoExpansion;
+		                        	        listaAbierta.add(0, nodoExpansion);
+	                        	        }
+	                        	        
+	                        	        
+	                        	        /*Para cada s de S que estuviera ya en ABIERTA o CERRADA
+	                        	        decidir si redirigir o no sus punteros hacia N
+	                        	        Para cada s de S que estuviera ya en CERRADA
+	                        	        decidir si redirigir o no los punteros de los nodos en sus sub´arboles
+	                        	        Reordenar ABIERTA segun f (n)*/
+	                        	        movimientosIzq ++;
 	                        	   }          	   
 	                           }
                             
@@ -154,19 +183,37 @@ public class AStarParking {
 	                           
 	                           while(calleEntraFrente < st){// para todas las calles incluyendo la propia del coche...
 	                        	   
-	                        	   //[NUEVO ESTADO PARKING] = estadoActual.moverCallePrincipio(calleEntraFrente, k, l);
+		                        	NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
+	                       	        expandir = NodoEstado.moverCallePrincipio(calleEntraFrente, k, l);
+	                       	        
+	                       	        if(expandir) {
+	                       	        	nodoExpansion.prev = listaCerrada.get(0);
+		                        	        listaCerrada.get(0).next = nodoExpansion;
+		                        	        listaAbierta.add(0, nodoExpansion);
+	                       	        }
+	                       	     calleEntraFrente++;
 	                           }
 	                           
 	                           //GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO MARCHA ATRAS
 	                           
 	                           while(calleEntraAtras < st){// para todas las calles incluyendo la propia del coche...
-	                        	   
-	                        	   //[NUEVO ESTADO PARKING] = estadoActual.moverCalleFinal(calleObjetivo, k, l);
+
+	                        	   NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
+	                       	        expandir = NodoEstado.moverCallePrincipio(calleEntraAtras, k, l);
+	                       	        
+	                       	        if(expandir) {
+	                       	        	nodoExpansion.prev = listaCerrada.get(0);
+		                        	        listaCerrada.get(0).next = nodoExpansion;
+		                        	        listaAbierta.add(0, nodoExpansion);
+	                       	        }
+	                        	   calleEntraAtras++;
 	                           }
+	                           
                             }
                         }       
                     }
                 }
+                System.out.println("ListaAbierta: "+listaAbierta.toString());
             }
         }
 
