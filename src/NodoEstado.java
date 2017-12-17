@@ -28,7 +28,7 @@ public class NodoEstado {
 		//recibe un parking
 		//recibe su padre para poder hacer seguimiento
 		//cost es el coste de la operacion que se va a realizar
-		public NodoEstado(Coche[][] parking, NodoEstado padre, int cost){
+		public NodoEstado(Coche[][] parking, NodoEstado padre){
 			this.parkingActual = parking;//recibe un parking
 			this.HeuristicaValue = getHeuristicValue();//toma el valor segun f heuristica
 			this.costeActual = this.antecesor.costeActual;//hereda el coste de su padre
@@ -57,7 +57,6 @@ public class NodoEstado {
 		}
 		//OPERADOR PARA MOVER COCHE A SU IZQUIERDA
 		public void moverIzda(int movimientos, int calle, int plaza){
-		
 			
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo

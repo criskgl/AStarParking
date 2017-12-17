@@ -125,12 +125,44 @@ public class AStarParking {
                 //todos los posibles estados a partir de los posibles movimientos de un coche
                 for(int i = 0; i < st; i++ ){
                     for(int j = 0; j < pl; j++ ){//para cada coche...
-                        listaCerrada.get(0).parkingActual[i][j];
-                        for(int k = 0; k < st; k++ ){//operar con todas las demas posiciones
+                    	NodoEstado estadoActual = new NodoEstado(listaCerrada.get(0).parkingActual, listaCerrada.get(0));
+                        int movimientosDer = 1;
+                        int movimientosIzq = 1;
+                        int calleEntraFrente = 0;
+                        int calleEntraAtras = 0;
+                    	for(int k = 0; k < st; k++ ){//operar con todas las demas posiciones
                             for(int l = 0; l < pl; l++ ){
 
+                            	//TODO LOS OPERADORES POR CADA MOVIMIENTO QUE HACEN DEBEN DEVOLVER UNA CONFIGURACIÓN NUEVA!!!!!!!
                             	
-
+	                           if(k != i && l != j){//Si no se trada de la misma casilla del coche que está siendo evaluado
+	                        	   
+	                        	   //GENERAR ESTADOS DE MOVER A DERECHA
+	                        	   while(movimientosDer < pl){
+	                        		   //[NUEVO ESTADO DE PARKING] = estadoActual.moverDerecha(movimientosDer, k, l);
+	                        		   movimientosDer += movimientosDer;
+	                        	   }
+	                        	   
+	                        	   //GENERAR ESTADOS DE MOVER A IZDA
+	                        	   while(movimientosIzq > 0){
+	                        		   //[NUEVO ESTADO DE PARKING] = estadoActual.moverIzquierda(movimientosIzq, k, l);
+	                        		   movimientosDer += movimientosIzq;
+	                        	   }          	   
+	                           }
+                            
+	                           //GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO DE CARA
+	                           
+	                           while(calleEntraFrente < st){// para todas las calles incluyendo la propia del coche...
+	                        	   
+	                        	   //[NUEVO ESTADO PARKING] = estadoActual.moverCallePrincipio(calleEntraFrente, k, l);
+	                           }
+	                           
+	                           //GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO MARCHA ATRAS
+	                           
+	                           while(calleEntraAtras < st){// para todas las calles incluyendo la propia del coche...
+	                        	   
+	                        	   //[NUEVO ESTADO PARKING] = estadoActual.moverCalleFinal(calleObjetivo, k, l);
+	                           }
                             }
                         }       
                     }
