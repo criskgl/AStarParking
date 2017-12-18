@@ -119,7 +119,7 @@ public class AStarParking {
         	
         	NodoEstado nodoAEvaluar = listaAbierta.get(0);//guardar el nodo a evaluar(solo implementacion, no algoritmo)        		
         		
-            listaCerrada.add(listaAbierta.get(0));//copiar el primer elemento de lista abierta y ponerlo en cerrada
+            listaCerrada.add(nodoAEvaluar);//copiar el primer elemento de lista abierta y ponerlo en cerrada
             listaAbierta.remove(0);//quitar el elemento copiado a cerrada de lista abierta
                 
             
@@ -131,7 +131,7 @@ public class AStarParking {
                 //todos los posibles estados a partir de los posibles movimientos de un coche
                 for(int i = 0; i < st; i++ ){
                     for(int j = 0; j < pl; j++ ){//para cada coche...
-                    	NodoEstado estadoActual = nodoAEvaluar;
+ 
 
                     	for(int k = 0; k < st; k++ ){//operar con todas las demas posiciones
                             for(int l = 0; l < pl; l++ ){
@@ -146,7 +146,7 @@ public class AStarParking {
 	                        	   
 	                        	   //GENERAR ESTADOS DE MOVER A DERECHA
 	                        	   while(movimientosDer < pl){
-	                        	        NodoEstado nodoExpansion = estadoActual;
+	                        	        NodoEstado nodoExpansion = nodoAEvaluar;
 	                        	        expandir = nodoExpansion.moverDerecha(movimientosDer, i, j);
 	                        	        
 	                        	        boolean repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoExpansion.parkingActual);
@@ -154,7 +154,7 @@ public class AStarParking {
 	                        	        
 	                        	        //TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
 	                        	        if(expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
-	                        	        	nodoExpansion.prev = listaCerrada.get(0);
+	                        	        	nodoExpansion.prev = nodoAEvaluar;
 		                        	        listaCerrada.get(0).next = nodoExpansion;
 		                        	        listaAbierta.add(0, nodoExpansion);
 	                        	        }
@@ -170,7 +170,7 @@ public class AStarParking {
 	                        	   
 	                        	   //GENERAR ESTADOS DE MOVER A IZDA
 	                        	   while(j - movimientosIzq > 0){
-	                        		    NodoEstado nodoExpansion = estadoActual;
+	                        		    NodoEstado nodoExpansion = nodoAEvaluar;
 	                        	        expandir = nodoExpansion.moverIzda(movimientosIzq, i, j);
 	                        	        
 	                        	        boolean repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoExpansion.parkingActual);
@@ -197,7 +197,7 @@ public class AStarParking {
 	                           
 	                           while(calleEntraFrente < st){// para todas las calles incluyendo la propia del coche...
 	                        	   
-		                        	NodoEstado nodoExpansion = estadoActual;
+		                        	NodoEstado nodoExpansion = nodoAEvaluar;
 	                       	        expandir = nodoExpansion.moverCallePrincipio(calleEntraFrente, i, j);
 	                       	       
 	                       	        boolean repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoExpansion.parkingActual);
@@ -216,7 +216,7 @@ public class AStarParking {
 	                           
 	                           while(calleEntraAtras < st){// para todas las calles incluyendo la propia del coche...
 
-	                        	   NodoEstado nodoExpansion = estadoActual;
+	                        	   NodoEstado nodoExpansion = nodoAEvaluar;
 	                       	        expandir = nodoExpansion.moverCallePrincipio(calleEntraAtras, i, j);
 	                       	        
 	                       	        boolean repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoExpansion.parkingActual);
