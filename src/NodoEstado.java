@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class NodoEstado {
+public class NodoEstado implements Cloneable{
 	
 	public static Coche[][] parkingActual;
 	public static Coche[][] parkingFinal;
@@ -19,6 +19,8 @@ public class NodoEstado {
 		//LOS NODOS ALBERGARAN EL ESTADO DEL PARKING.
 	   /*constructor para nodo inicial*/
 
+		public NodoEstado(){}
+	
 		public NodoEstado(Coche[][] parkingInicial, Coche[][] parkingFinal){
 			
 			this.parkingActual = parkingInicial;
@@ -45,6 +47,32 @@ public class NodoEstado {
 			numPlazas = parkingActual[0].length;
 		}
 		
+		//CONTRUCTOR DEFINITIVO PARA DUPLICAR NODOS DE MANERA INDEPENDIENTE 
+		public NodoEstado(NodoEstado nodoADuplicar){
+			
+			int st = NodoEstado.numCalles;
+			int pl = NodoEstado.numPlazas;
+			
+			NodoEstado.numCalles = st;
+			NodoEstado.numPlazas = pl;
+			
+			for(int i = 0; i < st; i++){
+				for(int j = 0; j < pl; j++){
+					this.parkingActual[i][j].car = nodoADuplicar.parkingActual[i][j].car;
+				}
+			}
+		}
+		
+		public NodoEstado clone(){
+	        NodoEstado nodo=null;
+	        try{
+	            nodo=(NodoEstado) super.clone();
+	        }catch(CloneNotSupportedException ex){
+	            System.out.println(" no se puede duplicar");
+	        }
+	        return nodo;
+		}
+		
 		//OPERADOR PARA MOVER COCHE A SU DERECHA
 		public static boolean moverDerecha(int movimientos, int calle, int plaza){
 		
@@ -60,7 +88,7 @@ public class NodoEstado {
 				}
 				if(libre){//mover Derecha
 					cambiarPos(plaza, calle, calle, plaza+movimientos);
-					costeActual = antecesor.costeActual + 1;//añadir al coste acumulado el coste de mover a derecha(1)
+					costeActual = NodoEstado.costeActual + 1;//añadir al coste acumulado el coste de mover a derecha(1)
 					//recalcular heuristica
 					getHeuristicValue();
 				}
