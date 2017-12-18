@@ -33,6 +33,7 @@ public class NodoEstado {
 			this.parkingActual = parking;//recibe un parking
 			getHeuristicValue();//toma el valor segun f heuristica
 			this.costeActual = this.antecesor.costeActual;//hereda el coste de su padre
+			EvaluacionValue = costeActual + HeuristicaValue;
 		}
 		
 		//OPERADOR PARA MOVER COCHE A SU DERECHA
@@ -41,7 +42,7 @@ public class NodoEstado {
 			
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo
-			if(plaza + movimientos <= parkingActual[calle].length){
+			if(plaza + movimientos < parkingActual[calle].length){
 				
 				for(int i = plaza+1; i < plaza+movimientos; i++){
 						if(parkingActual[calle][i].car.compareTo("__") != 0){
@@ -120,13 +121,22 @@ public class NodoEstado {
 			
 			for(int i = 0; i < parkingActual.length; i++){
 				for(int j = 0; j < parkingActual[i].length; j++){
-					
-					if(parkingActual[i][j].car.equals(parkingFinal[i][j].car)){
-						contadorHeuristics += 1;
+					String coche = parkingActual[i][j].car;
+					if(coche.compareTo("__") != 0) {
+						for(int k = 0; k < parkingActual.length; k++){
+							for(int l = 0; l < parkingActual[i].length; l++){
+								if(parkingActual[i][j].car.equals(parkingFinal[k][l].car)){
+									//si el coche esta bien colocado en calle y en plaza, no aumenta el valor heuristico
+									if(i == k && j  != l) contadorHeuristics += 1; //misma calle y distinta plaza para coche inicial y final
+									if(i != k && ((j == 0 || j == parkingActual[i].length-1))) contadorHeuristics += 2; //calle distinta con coche inicial/final en extremos
+									if(i != k && (j > 0 && j != parkingActual[i].length-1)) contadorHeuristics += 3; //calle distinta con coche inicial/final no en extremos
+								}
+							}	
+						}
 					}
 				}	
 			}
-			HeuristicaValue = parkingActual.length - contadorHeuristics;//numero de coches MAL COLOCADOS
+			HeuristicaValue = contadorHeuristics;// h(n)
 			
 		}
 }

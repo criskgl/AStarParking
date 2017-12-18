@@ -162,7 +162,7 @@ public class AStarParking {
 	                        	   //GENERAR ESTADOS DE MOVER A IZDA
 	                        	   while(j - movimientosIzq > 0){
 	                        		    NodoEstado nodoExpansion = new NodoEstado(parkingActual, estadoActual,parkingObjetivo);
-	                        	        expandir = nodoExpansion.moverIzda(movimientosIzq, k, l);
+	                        	        expandir = nodoExpansion.moverIzda(movimientosIzq, i, j);
 	                        	        
 	                        	        if(expandir) {
 	                        	        	nodoExpansion.prev = listaCerrada.get(0);
@@ -208,12 +208,17 @@ public class AStarParking {
 		                        	        listaAbierta.add(0, nodoExpansion);
 	                       	        }
 	                        	   calleEntraAtras++;
-	                           }    
+	                           }  
+	                           
                             }
+                            
                         }       
                     }
                 }
+                
+                sortArrayList(listaAbierta);
                 System.out.println("ListaAbierta: "+listaAbierta.toString());
+                
             }
         }
     }
@@ -245,6 +250,22 @@ public class AStarParking {
     		}
     	}
     	return repetido;
+    }
+    
+    public static void sortArrayList(ArrayList<NodoEstado> lista) {
+        int n = lista.size();
+        NodoEstado temp;
+        
+        for(int i = lista.size()-1; i >= 0; i--) {
+            for(int j = 0; j < i; j++) {
+                if(lista.get(j).EvaluacionValue < lista.get(j + 1).EvaluacionValue) {
+                    temp = lista.get(j);
+                    lista.set(j, lista.get(j + 1));
+                    lista.set(j + 1, temp);
+                }
+            }
+        }
+        
     }
 
 }
