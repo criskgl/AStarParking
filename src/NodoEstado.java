@@ -2,16 +2,14 @@ import java.util.ArrayList;
 
 public class NodoEstado implements Cloneable{
 	
-	public static Coche[][] parkingActual;
+	public Coche[][] parkingActual;
 	public static Coche[][] parkingFinal;
-	public static int costeActual;
+	public int costeActual;
 	public int EvaluacionValue;
-	public static int HeuristicaValue;
+	public int HeuristicaValue;
 	
 	/*REVISAR!!*/
-	public NodoEstado next;
 	public NodoEstado prev;
-	public static NodoEstado antecesor;
 	
 	public static int numCalles;
 	public static int numPlazas;
@@ -24,7 +22,7 @@ public class NodoEstado implements Cloneable{
 		public NodoEstado(Coche[][] parkingInicial, Coche[][] parkingFinal){
 			
 			this.parkingActual = parkingInicial;
-			this.parkingFinal = parkingFinal;
+			NodoEstado.parkingFinal = parkingFinal;
 			getHeuristicValue(); //TODO
 			
 			numCalles = parkingActual.length;
@@ -36,59 +34,53 @@ public class NodoEstado implements Cloneable{
 		//recibe un parking
 		//recibe su padre para poder hacer seguimiento
 		//cost es el coste de la operacion que se va a realizar
-		public NodoEstado(Coche[][] parking, NodoEstado padre, Coche[][] parkingObjetivo){
-			this.parkingFinal = parkingObjetivo;
+		public NodoEstado(Coche[][] parking, NodoEstado padre){
 			this.parkingActual = parking;//recibe un parking
 			getHeuristicValue();//toma el valor segun f heuristica
-			this.costeActual = this.antecesor.costeActual;//hereda el coste de su padre
+			this.costeActual = this.prev.costeActual;//hereda el coste de su padre
 			EvaluacionValue = costeActual + HeuristicaValue;
-			
-			numCalles = parkingActual.length;
-			numPlazas = parkingActual[0].length;
 		}
 		
 		//CONTRUCTOR DEFINITIVO PARA DUPLICAR NODOS DE MANERA INDEPENDIENTE 
 		public NodoEstado(NodoEstado nodoADuplicar){
 			
-			int st = NodoEstado.numCalles;
-			int pl = NodoEstado.numPlazas;
-			
-			NodoEstado.numCalles = st;
-			NodoEstado.numPlazas = pl;
-			
-			for(int i = 0; i < st; i++){
-				for(int j = 0; j < pl; j++){
-					this.parkingActual[i][j].car = nodoADuplicar.parkingActual[i][j].car;
+			this.HeuristicaValue = nodoADuplicar.HeuristicaValue;
+    		this.EvaluacionValue = nodoADuplicar.EvaluacionValue;
+    		this.costeActual = nodoADuplicar.costeActual;
+    		this.parkingActual = new Coche[numCalles][numPlazas];
+    		this.prev = nodoADuplicar;
+    		
+			for(int i = 0; i < numCalles; i++){
+				for(int j = 0; j < numPlazas; j++){
+					 Coche carActual = new Coche();//crear un nuevo coche
+		                /*asignar fila, columna actuales y coches*/             
+		                carActual.car = nodoADuplicar.parkingActual[i][j].car;
+		                carActual.rowNow = i;
+		                carActual.columnNow = j;
+		                this.parkingActual[i][j] = carActual;
 				}
 			}
 		}
 		
-		public NodoEstado clone(){
-	        NodoEstado nodo=null;
-	        try{
-	            nodo=(NodoEstado) super.clone();
-	        }catch(CloneNotSupportedException ex){
-	            System.out.println(" no se puede duplicar");
-	        }
-	        return nodo;
-		}
-		
 		//OPERADOR PARA MOVER COCHE A SU DERECHA
-		public static boolean moverDerecha(int movimientos, int calle, int plaza){
+		public boolean moverDerecha(int movimientos, int calle, int plaza){
 		
 			boolean libre = true;
+			
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			
 			//No podemos movernos a derecha estando en un extremo
-			if(plaza + movimientos < parkingActual[calle].length){
+			if(plaza + movimientos < numPlazas){
 				
-				for(int i = plaza+1; i < plaza+movimientos; i++){
+				for(int i = plaza+1; i <= plaza+movimientos; i++){
 						if(parkingActual[calle][i].car.compareTo("__") != 0){
 							libre = false;
-									break;
+							break;
 						}
 				}
 				if(libre){//mover Derecha
 					cambiarPos(plaza, calle, calle, plaza+movimientos);
-					costeActual = NodoEstado.costeActual + 1;//añadir al coste acumulado el coste de mover a derecha(1)
+					costeActual = this.costeActual + 1;//añadir al coste acumulado el coste de mover a derecha(1)
 					//recalcular heuristica
 					getHeuristicValue();
 				}
@@ -98,60 +90,63 @@ public class NodoEstado implements Cloneable{
 		
 		}
 		//OPERADOR PARA MOVER COCHE A SU IZQUIERDA
-		public static boolean moverIzda(int movimientos, int calle, int plaza){
+		public boolean moverIzda(int movimientos, int calle, int plaza){
 			
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo
-			if(plaza - movimientos >= parkingActual[calle].length){
+			
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			
+			if(plaza - movimientos >= numPlazas){
 				
-				for(int i = plaza; i < 0; i--){
+				for(int i = plaza; i >= plaza-movimientos; i--){
 						if(parkingActual[calle][i].car.compareTo("__") != 0){
 							libre = false;
-									break;
+							break;
 						}
 				}
 				if(libre){//mover Izda
 					cambiarPos(plaza, calle, calle, plaza-movimientos);
-					costeActual = antecesor.costeActual + 2;//añadir al coste acumulado el coste de mover a izda(2)
+					costeActual = this.prev.costeActual + 2;//añadir al coste acumulado el coste de mover a izda(2)
 				}
 			}
 			
 			return libre;
 		}
 		//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ADELANTE !DECISION DE IMPLEMENTACION MEMORIA!!!
-		public static boolean moverCallePrincipio(int calleObjetivo, int calle, int plaza){
+		public boolean moverCallePrincipio(int calleObjetivo, int calle, int plaza){
 			
 			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
 			
-			if(plaza == numPlazas && parkingActual[calleObjetivo][0].car.compareTo("__") == 0){// si el coche está al final de la calle...
+			if(plaza == numPlazas-1 && parkingActual[calleObjetivo][0].car.compareTo("__") == 0){// si el coche está al final de la calle...
 				cambiarPos(plaza, calle, calleObjetivo, 0);
-				costeActual = antecesor.costeActual + 3;//añadir al coste acumulado (3)
+				costeActual = this.prev.costeActual + 3;//añadir al coste acumulado (3)
 				return true;
 			}
 			return false;
 		}
 		
 		//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ATRAS 
-		public static boolean moverCalleFinal(int calleObjetivo, int calle, int plaza){
+		public boolean moverCalleFinal(int calleObjetivo, int calle, int plaza){
 			
 			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
 			
-			if(plaza == 0 && parkingActual[calleObjetivo][numPlazas].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
-				cambiarPos(plaza, calle, calleObjetivo, parkingActual[calleObjetivo].length - 1);
-				costeActual = antecesor.costeActual + 4;//añadir al coste acumulado el coste de mover a izda(4)
+			if(plaza == 0 && parkingActual[calleObjetivo][numPlazas-1].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
+				cambiarPos(plaza, calle, calleObjetivo, numPlazas-1);
+				this.costeActual = this.prev.costeActual + 4;//añadir al coste acumulado el coste de mover a izda(4)
 				return true;
 			}
 			return false;
 		}
 		
-		public static void cambiarPos(int filaInicial, int colInicial, int filaFinal,int colFinal){//mueve un coche una posicion FINAL
+		public void cambiarPos(int filaInicial, int colInicial, int filaFinal,int colFinal){//mueve un coche una posicion FINAL
 			
 			parkingActual[filaFinal][colFinal].car = parkingActual[filaInicial][colInicial].car;
 			
 			parkingActual[filaInicial][colInicial].car = "__";
 		}
 		
-		public static  void getHeuristicValue()//Depende de los coches bien colocados
+		public void getHeuristicValue()//Depende de los coches bien colocados
 		{
 			int contadorHeuristics = 0;
 			
