@@ -13,6 +13,9 @@ public class NodoEstado {
 	public NodoEstado prev;
 	public static NodoEstado antecesor;
 	
+	public static int numCalles;
+	public static int numPlazas;
+	
 		//LOS NODOS ALBERGARAN EL ESTADO DEL PARKING.
 	   /*constructor para nodo inicial*/
 
@@ -21,6 +24,9 @@ public class NodoEstado {
 			this.parkingActual = parkingInicial;
 			this.parkingFinal = parkingFinal;
 			getHeuristicValue(); //TODO
+			
+			numCalles = parkingActual.length;
+			numPlazas = parkingActual[0].length;
 		}
 		
 		/*constructor para cualquier otro nodo*/
@@ -34,12 +40,14 @@ public class NodoEstado {
 			getHeuristicValue();//toma el valor segun f heuristica
 			this.costeActual = this.antecesor.costeActual;//hereda el coste de su padre
 			EvaluacionValue = costeActual + HeuristicaValue;
+			
+			numCalles = parkingActual.length;
+			numPlazas = parkingActual[0].length;
 		}
 		
 		//OPERADOR PARA MOVER COCHE A SU DERECHA
 		public static boolean moverDerecha(int movimientos, int calle, int plaza){
-			
-			
+		
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo
 			if(plaza + movimientos < parkingActual[calle].length){
@@ -87,7 +95,7 @@ public class NodoEstado {
 			
 			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
 			
-			if(plaza == parkingActual[calle].length - 1 && parkingActual[calleObjetivo][0].car.compareTo("__") == 0){// si el coche está al final de la calle...
+			if(plaza == numPlazas && parkingActual[calleObjetivo][0].car.compareTo("__") == 0){// si el coche está al final de la calle...
 				cambiarPos(plaza, calle, calleObjetivo, 0);
 				costeActual = antecesor.costeActual + 3;//añadir al coste acumulado (3)
 				return true;
@@ -100,7 +108,7 @@ public class NodoEstado {
 			
 			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
 			
-			if(plaza == 0 && parkingActual[calleObjetivo][parkingActual[calleObjetivo].length -1].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
+			if(plaza == 0 && parkingActual[calleObjetivo][numPlazas].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
 				cambiarPos(plaza, calle, calleObjetivo, parkingActual[calleObjetivo].length - 1);
 				costeActual = antecesor.costeActual + 4;//añadir al coste acumulado el coste de mover a izda(4)
 				return true;
