@@ -117,7 +117,7 @@ public class AStarParking {
         while(listaAbierta.isEmpty() || exito){
 
             listaCerrada.add(listaAbierta.get(0));//copiar el primer elemento de lista abierta y ponerlo en cerrada
-            listaAbierta.remove(0);//quitar el elemento copiado a cerrada de lista abierta
+            //listaAbierta.remove(0);//quitar el elemento copiado a cerrada de lista abierta
             
             exito = checkExito(listaCerrada.get(0).parkingActual, listaCerrada.get(0).parkingFinal, st, pl);
             if(exito) break;
@@ -126,22 +126,23 @@ public class AStarParking {
                 //todos los posibles estados a partir de los posibles movimientos de un coche
                 for(int i = 0; i < st; i++ ){
                     for(int j = 0; j < pl; j++ ){//para cada coche...
-                    	NodoEstado estadoActual = new NodoEstado(listaCerrada.get(0).parkingActual, listaCerrada.get(0), parkingObjetivo);
-                        int movimientosDer = 1;
-                        int movimientosIzq = 1;
-                        int calleEntraFrente = 0;
-                        int calleEntraAtras = 0;
+                    	NodoEstado estadoActual = new NodoEstado(listaAbierta.get(0).parkingActual, listaAbierta.get(0), parkingObjetivo);
+
                     	for(int k = 0; k < st; k++ ){//operar con todas las demas posiciones
                             for(int l = 0; l < pl; l++ ){
-
-                            	//TODO LOS OPERADORES POR CADA MOVIMIENTO QUE HACEN DEBEN DEVOLVER UNA CONFIGURACION NUEVA!!!!!!!
                             	
-	                           if(k != i && l != j){//Si no se trada de la misma casilla del coche que estÃ¡ siendo evaluado
+                                int movimientosDer = 1;
+                                int movimientosIzq = 1;
+                                int calleEntraFrente = 0;
+                                int calleEntraAtras = 0;
+                            
+                            	
+	                           if(k != i || l != j){//Si no se trada de la misma casilla del coche que estÃ¡ siendo evaluado
 	                        	   
 	                        	   //GENERAR ESTADOS DE MOVER A DERECHA
 	                        	   while(movimientosDer < pl){
-	                        	        NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
-	                        	        expandir = NodoEstado.moverDerecha(movimientosDer, k, l);
+	                        	        NodoEstado nodoExpansion = new NodoEstado(parkingActual, estadoActual, parkingObjetivo);
+	                        	        expandir = nodoExpansion.moverDerecha(movimientosDer, i, j);
 	                        	        
 	                        	        if(expandir) {
 	                        	        	nodoExpansion.prev = listaCerrada.get(0);
@@ -152,16 +153,16 @@ public class AStarParking {
 	                        	        /*Para cada s de S que estuviera ya en ABIERTA o CERRADA
 	                        	        decidir si redirigir o no sus punteros hacia N
 	                        	        Para cada s de S que estuviera ya en CERRADA
-	                        	        decidir si redirigir o no los punteros de los nodos en sus sub´arboles
+	                        	        decidir si redirigir o no los punteros de los nodos en sus subï¿½arboles
 	                        	        Reordenar ABIERTA segun f (n)*/
 	                        	        
 	                        		   movimientosDer ++;
 	                        	   }
 	                        	   
 	                        	   //GENERAR ESTADOS DE MOVER A IZDA
-	                        	   while(movimientosIzq > 0){
-	                        		    NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
-	                        	        expandir = NodoEstado.moverIzda(movimientosIzq, k, l);
+	                        	   while(j - movimientosIzq > 0){
+	                        		    NodoEstado nodoExpansion = new NodoEstado(parkingActual, estadoActual,parkingObjetivo);
+	                        	        expandir = nodoExpansion.moverIzda(movimientosIzq, k, l);
 	                        	        
 	                        	        if(expandir) {
 	                        	        	nodoExpansion.prev = listaCerrada.get(0);
@@ -173,7 +174,7 @@ public class AStarParking {
 	                        	        /*Para cada s de S que estuviera ya en ABIERTA o CERRADA
 	                        	        decidir si redirigir o no sus punteros hacia N
 	                        	        Para cada s de S que estuviera ya en CERRADA
-	                        	        decidir si redirigir o no los punteros de los nodos en sus sub´arboles
+	                        	        decidir si redirigir o no los punteros de los nodos en sus subï¿½arboles
 	                        	        Reordenar ABIERTA segun f (n)*/
 	                        	        movimientosIzq ++;
 	                        	   }          	   
@@ -183,8 +184,8 @@ public class AStarParking {
 	                           
 	                           while(calleEntraFrente < st){// para todas las calles incluyendo la propia del coche...
 	                        	   
-		                        	NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
-	                       	        expandir = NodoEstado.moverCallePrincipio(calleEntraFrente, k, l);
+		                        	NodoEstado nodoExpansion = new NodoEstado(parkingActual, estadoActual, parkingObjetivo);
+	                       	        expandir = nodoExpansion.moverCallePrincipio(calleEntraFrente, i, j);
 	                       	        
 	                       	        if(expandir) {
 	                       	        	nodoExpansion.prev = listaCerrada.get(0);
@@ -198,8 +199,8 @@ public class AStarParking {
 	                           
 	                           while(calleEntraAtras < st){// para todas las calles incluyendo la propia del coche...
 
-	                        	   NodoEstado nodoExpansion = new NodoEstado(parkingActual, parkingObjetivo);
-	                       	        expandir = NodoEstado.moverCallePrincipio(calleEntraAtras, k, l);
+	                        	   NodoEstado nodoExpansion = new NodoEstado(parkingActual, estadoActual,parkingObjetivo);
+	                       	        expandir = nodoExpansion.moverCallePrincipio(calleEntraAtras, i, j);
 	                       	        
 	                       	        if(expandir) {
 	                       	        	nodoExpansion.prev = listaCerrada.get(0);
@@ -207,8 +208,7 @@ public class AStarParking {
 		                        	        listaAbierta.add(0, nodoExpansion);
 	                       	        }
 	                        	   calleEntraAtras++;
-	                           }
-	                           
+	                           }    
                             }
                         }       
                     }
@@ -216,7 +216,6 @@ public class AStarParking {
                 System.out.println("ListaAbierta: "+listaAbierta.toString());
             }
         }
-
     }
 
     public static boolean checkExito(Coche[][] parkingActual, Coche[][] parkingObjetivo, int st, int pl) {
@@ -230,6 +229,22 @@ public class AStarParking {
             }
         }
         return result;
+    }
+    
+    public static boolean parkingRepetidoEnLista(ArrayList<NodoEstado> lista, Coche[][] parking){
+    	
+    	int posicionLista = 0; 
+    	boolean repetido = true;
+    	
+    	for(int i = 0; i < parking.length; i++){
+    		for(int j = 0; j < parking[j].length; j++){
+    			if(parking[i][j].car.compareTo(lista.get(posicionLista).parkingActual[i][j].car) != 0){
+    				repetido = false;
+    				break;
+    			}
+    		}
+    	}
+    	return repetido;
     }
 
 }

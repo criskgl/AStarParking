@@ -3,10 +3,10 @@ import java.util.ArrayList;
 public class NodoEstado {
 	
 	public static Coche[][] parkingActual;
-	public Coche[][] parkingFinal;
+	public static Coche[][] parkingFinal;
 	public static int costeActual;
 	public int EvaluacionValue;
-	public int HeuristicaValue;
+	public static int HeuristicaValue;
 	
 	/*REVISAR!!*/
 	public NodoEstado next;
@@ -20,7 +20,7 @@ public class NodoEstado {
 			
 			this.parkingActual = parkingInicial;
 			this.parkingFinal = parkingFinal;
-			this.HeuristicaValue = this.getHeuristicValue(); //TODO
+			getHeuristicValue(); //TODO
 		}
 		
 		/*constructor para cualquier otro nodo*/
@@ -31,7 +31,7 @@ public class NodoEstado {
 		public NodoEstado(Coche[][] parking, NodoEstado padre, Coche[][] parkingObjetivo){
 			this.parkingFinal = parkingObjetivo;
 			this.parkingActual = parking;//recibe un parking
-			this.HeuristicaValue = getHeuristicValue();//toma el valor segun f heuristica
+			getHeuristicValue();//toma el valor segun f heuristica
 			this.costeActual = this.antecesor.costeActual;//hereda el coste de su padre
 		}
 		
@@ -41,9 +41,9 @@ public class NodoEstado {
 			
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo
-			if(plaza + movimientos <= parkingActual[calle].length - 1){
+			if(plaza + movimientos <= parkingActual[calle].length){
 				
-				for(int i = plaza; i < parkingActual[calle].length - 1; i++){
+				for(int i = plaza+1; i < plaza+movimientos; i++){
 						if(parkingActual[calle][i].car.compareTo("__") != 0){
 							libre = false;
 									break;
@@ -52,6 +52,8 @@ public class NodoEstado {
 				if(libre){//mover Derecha
 					cambiarPos(plaza, calle, calle, plaza+movimientos);
 					costeActual = antecesor.costeActual + 1;//añadir al coste acumulado el coste de mover a derecha(1)
+					//recalcular heuristica
+					getHeuristicValue();
 				}
 			}
 			
@@ -63,7 +65,7 @@ public class NodoEstado {
 			
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo
-			if(plaza - movimientos >= parkingActual[calle].length - 1){
+			if(plaza - movimientos >= parkingActual[calle].length){
 				
 				for(int i = plaza; i < 0; i--){
 						if(parkingActual[calle][i].car.compareTo("__") != 0){
@@ -81,6 +83,9 @@ public class NodoEstado {
 		}
 		//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ADELANTE !DECISION DE IMPLEMENTACION MEMORIA!!!
 		public static boolean moverCallePrincipio(int calleObjetivo, int calle, int plaza){
+			
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			
 			if(plaza == parkingActual[calle].length - 1 && parkingActual[calleObjetivo][0].car.compareTo("__") == 0){// si el coche está al final de la calle...
 				cambiarPos(plaza, calle, calleObjetivo, 0);
 				costeActual = antecesor.costeActual + 3;//añadir al coste acumulado (3)
@@ -91,6 +96,9 @@ public class NodoEstado {
 		
 		//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ATRAS 
 		public static boolean moverCalleFinal(int calleObjetivo, int calle, int plaza){
+			
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			
 			if(plaza == 0 && parkingActual[calleObjetivo][parkingActual[calleObjetivo].length -1].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
 				cambiarPos(plaza, calle, calleObjetivo, parkingActual[calleObjetivo].length - 1);
 				costeActual = antecesor.costeActual + 4;//añadir al coste acumulado el coste de mover a izda(4)
@@ -106,19 +114,19 @@ public class NodoEstado {
 			parkingActual[filaInicial][colInicial].car = "__";
 		}
 		
-		public  int getHeuristicValue()//Depende de los coches bien colocados
+		public static  void getHeuristicValue()//Depende de los coches bien colocados
 		{
 			int contadorHeuristics = 0;
 			
-			for(int i = 0; i < this.parkingActual.length; i++){
-				for(int j = 0; j < this.parkingActual[i].length; j++){
+			for(int i = 0; i < parkingActual.length; i++){
+				for(int j = 0; j < parkingActual[i].length; j++){
 					
 					if(parkingActual[i][j].car.equals(parkingFinal[i][j].car)){
 						contadorHeuristics += 1;
 					}
 				}	
 			}
-			return contadorHeuristics;
+			HeuristicaValue = parkingActual.length - contadorHeuristics;//numero de coches MAL COLOCADOS
 			
 		}
 }
