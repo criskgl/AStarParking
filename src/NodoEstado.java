@@ -132,7 +132,7 @@ public class NodoEstado implements Cloneable{
 			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
 			
 			if(plaza == 0 && parkingActual[calleObjetivo][numPlazas-1].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
-				cambiarPos(plaza, calle, calleObjetivo, numPlazas-1);
+				cambiarPos(calle, plaza, calleObjetivo, numPlazas-1);
 				this.costeActual = this.prev.costeActual + 4;//añadir al coste acumulado el coste de mover a izda(4)
 				return true;
 			}
@@ -168,6 +168,14 @@ public class NodoEstado implements Cloneable{
 				}	
 			}
 			HeuristicaValue = contadorHeuristics;// h(n)
-			
+		}
+		
+		public void printParking(){
+			for(int i = 0; i < NodoEstado.numCalles; i++){
+				for(int j = 0; j < NodoEstado.numPlazas; j++){
+					System.out.print(this.parkingActual[i][j].car);
+				}
+				System.out.println("");
+			}
 		}
 }
