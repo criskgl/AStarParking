@@ -3,6 +3,7 @@ public class NodoEstado implements Cloneable{
 	public String[][] parkingActual;
 	public static String[][] parkingFinal;
 	public int costeActual;
+	public int costeMovimiento;
 	public int EvaluacionValue;
 	public int HeuristicaValue;
 
@@ -10,6 +11,8 @@ public class NodoEstado implements Cloneable{
 
 	public static int numCalles;
 	public static int numPlazas;
+	
+	public int calleInicial, plazaInicial, calleFinal, plazaFinal; //variables para impresion del fichero
 
 
 	public NodoEstado(String[][] parkingInicial, String[][] parkingFinal){ // Constructor para el nodo inicial
@@ -63,7 +66,8 @@ public class NodoEstado implements Cloneable{
 		
 		if(libre){ //mover Derecha
 			cambiarPos(calle, plaza, calle, plaza+movimientos);
-			costeActual = this.costeActual + 1; //sumar al coste acumulado el coste de mover a derecha(1)
+			costeMovimiento = 1;
+			costeActual = this.costeActual + costeMovimiento; //sumar al coste acumulado el coste de mover a derecha(1)
 			getHeuristicValue();
 		}
 
@@ -89,7 +93,8 @@ public class NodoEstado implements Cloneable{
 		
 		if(libre){ //mover Izda
 			cambiarPos(calle, plaza, calle,  plaza-movimientos);
-			costeActual = this.prev.costeActual + 2;//añadir al coste acumulado el coste de mover a izda(2)
+			costeMovimiento = 2;
+			costeActual = this.prev.costeActual + costeMovimiento;//añadir al coste acumulado el coste de mover a izda(2)
 			getHeuristicValue();
 		}
 	
@@ -99,11 +104,12 @@ public class NodoEstado implements Cloneable{
 	//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ADELANTE 
 	public boolean moverCallePrincipio(int calleObjetivo, int calle, int plaza){
 
-		if((parkingActual[calle][plaza].compareTo("__") == 0) && plaza == numPlazas-1) return false; //comprobar que la casilla que se va a intentar mover no es un espacio vacio
+		if((parkingActual[calle][plaza].compareTo("__") == 0) && plaza != numPlazas-1) return false; //comprobar que la casilla que se va a intentar mover no es un espacio vacio
 		if(parkingActual[calleObjetivo][0].compareTo("__") != 0) return false; 
 
 		cambiarPos(calle, plaza, calleObjetivo, 0);
-		costeActual = this.prev.costeActual + 3; //sumar al coste acumulado (3)
+		costeMovimiento = 3;
+		costeActual = this.prev.costeActual + costeMovimiento; //sumar al coste acumulado (3)
 		getHeuristicValue();
 		return true;
 
@@ -116,14 +122,20 @@ public class NodoEstado implements Cloneable{
 		if(parkingActual[calleObjetivo][numPlazas-1].compareTo("__") != 0) return false;
 
 		cambiarPos(calle, plaza, calleObjetivo, numPlazas-1);
-		this.costeActual = this.prev.costeActual + 4; //sumar al coste acumulado el coste de mover a izda(4)
+		costeMovimiento = 4;
+		this.costeActual = this.prev.costeActual + costeMovimiento; //sumar al coste acumulado el coste de mover a izda(4)
 		getHeuristicValue();
 
 		return true;
 	}
 
 	public void cambiarPos(int CalleInicial, int PlazaInicial, int CalleFinal,int PlazaFinal){//mueve un coche una posicion FINAL
-
+		
+		this.calleInicial = calleInicial+1; //variables para impresion del fichero
+		this.plazaInicial = plazaInicial+1;
+		this.calleFinal = calleFinal+1;
+		this.plazaFinal = plazaFinal+1;
+		
 		parkingActual[CalleFinal][PlazaFinal] = parkingActual[CalleInicial][PlazaInicial];
 		parkingActual[CalleInicial][PlazaInicial] = "__";
 		

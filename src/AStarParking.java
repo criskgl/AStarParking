@@ -1,13 +1,18 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Stack;
 
 public class AStarParking {
-
-	public static void main(String[] args) throws FileNotFoundException{
-
+	
+	public static void main(String[] args) throws IOException{
+		
+		long start = System.nanoTime();
+		
 		String[][] parkingActual;//sera nodo inicial
 		String[][] parkingObjetivo;
 		int st;
@@ -21,6 +26,9 @@ public class AStarParking {
 		boolean cerradaInsertada;
 		boolean repetidoEnAbierta;
 		NodoEstado nodoExpandir;
+		
+		//variables para estadisticas
+		int nodosExpandidos = 0;
 
 		/*PARSER*/
 		parkingActual = getParking("src//parking-actual.init");
@@ -43,7 +51,7 @@ public class AStarParking {
 			NodoEstado nodoAEvaluar = listaAbierta.remove(0); //guardar el nodo a evaluar(solo implementacion, no algoritmo)        		
 			cerradaInsertada = addCerrada(listaCerrada, nodoAEvaluar);//copiar el primer elemento de lista abierta y ponerlo en cerrada
 				
-			System.out.println("\n\nIteracion : " +iteracion); 
+			System.out.println("\n\nIteracion : " + iteracion); 
 			System.out.println("************");
 			nodoAEvaluar.printParking();
 			System.out.println("************");
@@ -66,10 +74,11 @@ public class AStarParking {
 										if (j < l) { //(si posicion inicial < posicion final)
 
 											nodoExpandir = new NodoEstado(nodoAEvaluar);
+											nodosExpandidos++;
 											expandir = nodoExpandir.moverDerecha(l - j, i, j);
 
 											repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
-													nodoExpandir.parkingActual);
+											nodoExpandir.parkingActual);
 
 											//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
 											if (expandir && !repetidoEnCerrada) {
@@ -91,7 +100,7 @@ public class AStarParking {
 
 										if (j > l) {
 											nodoExpandir = new NodoEstado(nodoAEvaluar);
-
+											nodosExpandidos++;
 											expandir = nodoExpandir.moverIzda(j - l, i, j);
 
 											repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
@@ -119,6 +128,7 @@ public class AStarParking {
 									if (l == 0) { //fijamos las posiciones
 
 										nodoExpandir = new NodoEstado(nodoAEvaluar);
+										nodosExpandidos++;
 										expandir = nodoExpandir.moverCallePrincipio(k, i, j);
 
 										repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
@@ -144,6 +154,7 @@ public class AStarParking {
 
 									if (l == 0) {
 										nodoExpandir = new NodoEstado(nodoAEvaluar);
+										nodosExpandidos++;
 										expandir = nodoExpandir.moverCalleFinal(k, i, j);
 
 										repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
@@ -190,18 +201,40 @@ public class AStarParking {
 				nodoSolucion = nodoSolucion.prev;
 			}
 
-			String[][] step = new String[st][pl];
+			NodoEstado step;
+			int coste = 0;
+			
+			PrintWriter out = new PrintWriter(new FileWriter("out.plan"));
+			
 			while(!solucion.isEmpty()) {
 				paso++;
-				System.out.println("\nPaso "+paso +" ");
-				step = solucion.pop().parkingActual;
+				out.write(paso +",");
+				step = solucion.pop();
+				out.write(step.parkingActual[step.calleInicial][step.plazaInicial] + ",");
+				out.write("L"+step.calleInicial+" "+"P"+step.plazaInicial+ ", ");
+				out.write("L"+step.calleFinal+" "+"P"+step.plazaFinal+ ", ");
+				out.write(step.costeMovimiento + "\n");
+				
+				System.out.println(paso);
 				for(int i = 0; i < st; i++){
 					for(int j = 0; j < pl; j++){
-						System.out.print(step[i][j] + " ");
+						System.out.print(step.parkingActual[i][j] + " ");
 					}System.out.println("");
-				}
+				}System.out.println("");
 
 			}
+			
+			out.close();
+			
+			double estimatedTime = ((System.nanoTime() - start) / 1000000000.0);
+			
+			PrintWriter out2 = new PrintWriter(new FileWriter("out.info"));
+			
+			out2.write("Número de pasos: "+ paso+"\n");
+			out2.write("Tiempo total (segs): "+ estimatedTime+ "\n");
+			out2.write("Coste total: " + coste+"\n");
+			out2.write("Nodos expandidos: " + nodosExpandidos+"\n");
+			out2.close();
 		}
 	}
 
