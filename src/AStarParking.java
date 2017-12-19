@@ -1,374 +1,318 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Stack.*;
 import java.util.Scanner;
 import java.util.Stack;
 
 public class AStarParking {
 
-    public static void main(String[] args) throws FileNotFoundException {
-        // TODO Auto-generated method stub
+	public static void main(String[] args) throws FileNotFoundException{
+
+		String[][] parkingActual;//sera nodo inicial
+		String[][] parkingObjetivo;
+		int st;
+		int pl;
+
+		//variables para A*
+		int iteracion = 0;
+		boolean exito = true;
+		boolean expandir = false;
+		boolean repetidoEnCerrada;
+		boolean cerradaInsertada;
+		boolean repetidoEnAbierta;
+		NodoEstado nodoExpandir;
+
+		/*PARSER*/
+		parkingActual = getParking("src//parking-actual.init");
+		parkingObjetivo = getParking("src//parking-objetivo.goal");
+
+		st = parkingActual.length; //numero de calles
+		pl = parkingActual[0].length; //numero de plazas por calle     
+
+//													------------------------- INICIO ALGORITMO A* ----------------------------
+
+		NodoEstado nodoInit = new NodoEstado(parkingActual, parkingObjetivo);	//1.Crear Nodo Inicial a partir del parking inicial proporcionado 
+		ArrayList<NodoEstado> listaAbierta = new ArrayList<NodoEstado>(); 		//2.Crear Listas Abierta y Cerrada
+		ArrayList<NodoEstado> listaCerrada = new ArrayList<NodoEstado>();
+		listaAbierta.add(nodoInit); 											//3.Meter Nodo inicial en Abierta
 
 
-        /*PARSER*/
+		while(listaAbierta.isEmpty() == false || !exito){
 
-        String actual = "";
-        String objetivo = "";
+			iteracion +=1;
+			NodoEstado nodoAEvaluar = listaAbierta.remove(0); //guardar el nodo a evaluar(solo implementacion, no algoritmo)        		
+			cerradaInsertada = addCerrada(listaCerrada, nodoAEvaluar);//copiar el primer elemento de lista abierta y ponerlo en cerrada
+				
+			System.out.println("\n\nIteracion : " +iteracion); 
+			System.out.println("************");
+			nodoAEvaluar.printParking();
+			System.out.println("************");
+			
+			
+			if (cerradaInsertada) {
+				if (checkExito(nodoAEvaluar.parkingActual, NodoEstado.parkingFinal))
+					break; //si el N es estado final --> Exito
+				else {
 
-        Scanner input = new Scanner(new File("src//parking-actual.init"));
+					//para cada coche expandiremos todos sus posibles movimientos generando todos los posibles estados a partir de los posibles movimientos de un coche
+					for (int i = 0; i < st; i++) {//para cada coche...
+						for (int j = 0; j < pl; j++) {
+							for (int k = 0; k < st; k++) {//operar con todas las demas posiciones
+								for (int l = 0; l < pl; l++) {
 
-        while(input.hasNext()) {
-            String i = input.next();
-            actual += i;
-        }
+									//---------------------------------------------------------------GENERAR ESTADOS DE MOVER A DERECHA---------------------------------------------------------------
 
-        input = new Scanner(new File("src//parking-objetivo.goal"));
+									if (i == k) { //solo para posiciones en la misma calle (Derecha e Izquierda)
+										if (j < l) { //(si posicion inicial < posicion final)
 
-        while(input.hasNext()) {
-            String i = input.next();
-            objetivo += i;
-        }
+											nodoExpandir = new NodoEstado(nodoAEvaluar);
+											expandir = nodoExpandir.moverDerecha(l - j, i, j);
 
-        int st = Character.getNumericValue(actual.charAt(0)); //number of streets
-        int pl = Character.getNumericValue(actual.charAt(1)); //number of parking lots per street
+											repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
+													nodoExpandir.parkingActual);
 
-        actual = actual.substring(2);
-        objetivo = objetivo.substring(2);
+											//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
+											if (expandir && !repetidoEnCerrada) {
+												System.out.println("\n----MOV DERECHA----");
+												nodoExpandir.printParking();
+												System.out.print("\nCerrada: ");
+												printLista(listaCerrada);
+												addAbierta(listaAbierta, nodoExpandir);
+												System.out.print("\nAbierta: ");
+												printLista(listaAbierta);
+												System.out.println("");
 
-        System.out.println("ACTUAL: "+actual);
-        System.out.println("OBJETIVO: "+objetivo);
-        System.out.println(st);
-        System.out.println(pl);
+												nodoExpandir.prev = nodoAEvaluar;
 
-        /**/        
+											}
+										}
 
-        /*crear una matriz para cada parking*/
-        Coche[][] parkingActual = new Coche[st][pl];//será nodo inicial
-        Coche[][] parkingObjetivo = new Coche[st][pl];
+										//-----------------------------------------------------------GENERAR ESTADOS DE MOVER A IZDA-------------------------------------------------------------
 
-        /*llenar cada matriz con sus respectivos coches*/
-        /*Llenado PK inicial*/
+										if (j > l) {
+											nodoExpandir = new NodoEstado(nodoAEvaluar);
 
-        for(int i = 0; i < st; i++){
-            for(int j = 0; j < pl; j++){
+											expandir = nodoExpandir.moverIzda(j - l, i, j);
 
+											repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
+													nodoExpandir.parkingActual);
+											repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta,
+													nodoExpandir.parkingActual);
 
-                Coche carActual = new Coche();//crear un nuevo coche
-                /*asignar fila, columna actuales y coches*/             
-                carActual.car = actual.substring(0, 2);
-                carActual.rowNow = i;
-                carActual.columnNow = j;
-                parkingActual[i][j] = carActual;
+											//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
+											if (expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
 
-                /*acortar la entrada*/
-                actual = actual.substring(2);
-            }   
-        }
+												System.out.println("\n----MOV IZDA----");
+												nodoExpandir.printParking();
+												System.out.print("\nCerrada: ");
+												printLista(listaCerrada);
+												addAbierta(listaAbierta, nodoExpandir);
+												System.out.print("\nAbierta: ");
+												printLista(listaAbierta);
+												System.out.println("");
 
-        /*Llenado PK objetivo*/
-        for(int i = 0; i < st; i++){
-            for(int j = 0; j < pl; j++){
+											}
+										}
+									}
 
+									//------------------------------------------------------GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO DE CARA---------------------------------------------------
+									if (l == 0) { //fijamos las posiciones
 
-                Coche carActual = new Coche();//crear un nuevo coche
-                /*asignar fila, columna actuales y coches*/             
-                carActual.car = objetivo.substring(0, 2);
-                carActual.rowNow = i;
-                carActual.columnNow = j;
-                parkingObjetivo[i][j] = carActual;
+										nodoExpandir = new NodoEstado(nodoAEvaluar);
+										expandir = nodoExpandir.moverCallePrincipio(k, i, j);
 
-                /*acortar la entrada*/
-                objetivo = objetivo.substring(2);
-            }   
-        }
+										repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
+												nodoExpandir.parkingActual);
+										repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta,
+												nodoExpandir.parkingActual);
 
-        System.out.println("ORDEN COCHES EN PARKING ACTUAL");
-        for(int i = 0; i < st; i++){
-            for(int j = 0; j < pl; j++){
+										//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
+										if (expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
+											System.out.println("\n----ENTRADA DELANTE----");
+											nodoExpandir.printParking();
+											System.out.print("\nCerrada: ");
+											printLista(listaCerrada);
+											addAbierta(listaAbierta, nodoExpandir);
+											System.out.print("\nAbierta: ");
+											printLista(listaAbierta);
+											System.out.println("");
 
-                System.out.print(parkingActual[i][j].car+ " ");
-            }
-            System.out.println("");
-        }
+										}
+									}
 
-        System.out.println("ORDEN COCHES EN PARKING OBJETIVO");
-        for(int i = 0; i < st; i++){
-            for(int j = 0; j < pl; j++){
+									//--------------------------------------------------------GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO MARCHA ATRAS-----------------------------------------
 
-                System.out.print(parkingObjetivo[i][j].car+ " ");
+									if (l == 0) {
+										nodoExpandir = new NodoEstado(nodoAEvaluar);
+										expandir = nodoExpandir.moverCalleFinal(k, i, j);
 
-            }
-            System.out.println("");
-        }
+										repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada,
+												nodoExpandir.parkingActual);
+										repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta,
+												nodoExpandir.parkingActual);
 
+										//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
+										if (expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
+											System.out.println("\n----ENTRADA DETRAS----");
+											nodoExpandir.printParking();
+											System.out.print("\nCerrada: ");
+											printLista(listaCerrada);
+											addAbierta(listaAbierta, nodoExpandir);
+											System.out.print("\nAbierta: ");
+											printLista(listaAbierta);
+											System.out.println("");
 
-        /*INICIO ALGORITMO A* */
+										}
+									}
 
-        //1.Crear Nodo Inicial a partir del parking inicial proporcionado
-        NodoEstado nodoInit = new NodoEstado(parkingActual, parkingObjetivo);
-        //2.Crear Listas Abierta y Cerrada
-        ArrayList<NodoEstado> listaAbierta = new ArrayList<NodoEstado>();
-        ArrayList<NodoEstado> listaCerrada = new ArrayList<NodoEstado>();
-        //3.Meter Nodo inicial en Abierta
-        listaAbierta.add(nodoInit);
+								}
 
-        int iteracion = 0;
-        boolean exito = true;
-        boolean expandir = false;
-        boolean repetidoEnCerrada;
-        boolean repetidoEnAbierta;
-        NodoEstado nodoAEvaluarDuplicate;
-        
-        while(listaAbierta.isEmpty() == false || !exito){
+							}
 
-        	iteracion +=1;
-        	NodoEstado nodoAEvaluar = listaAbierta.get(0);//guardar el nodo a evaluar(solo implementacion, no algoritmo)        		
-        		
-            listaCerrada.add(nodoAEvaluar);//copiar el primer elemento de lista abierta y ponerlo en cerrada
-            listaAbierta.remove(listaAbierta.size()-1);//quitar el elemento copiado a cerrada de lista abierta
-            System.out.println("Iteracion : " +iteracion); 
-            System.out.println("************");
-            nodoAEvaluar.printParking();
-            System.out.println("************");
-            
-            //si el N es estado final --> Exito
-            exito = checkExito(nodoAEvaluar.parkingActual, nodoAEvaluar.parkingFinal);
-            if(exito) break;
-            else{
-                //para cada coche expandiremos todos sus posibles movimientos generando 
-                //todos los posibles estados a partir de los posibles movimientos de un coche
-                for(int i = 0; i < st; i++ ){
-                    for(int j = 0; j < pl; j++ ){//para cada coche...
+						}
 
-                    	
-                    	for(int k = 0; k < st; k++ ){//operar con todas las demas posiciones
-                            for(int l = 0; l < pl; l++ ){
-                            	                 	                        	   
-//---------------------------------------------------------------GENERAR ESTADOS DE MOVER A DERECHA---------------------------------------------------------------
-                        	      
-	                        		   if(i == k) { //solo para posiciones en la misma calle
-	                        			   if(j<l){
-	                        				   nodoAEvaluarDuplicate = new NodoEstado(nodoAEvaluar);
+					}
+				} 
+			}
+			sortArrayList(listaAbierta);
+		}
+		//end of while
+		if(exito){
+			Stack<NodoEstado> solucion = new Stack<NodoEstado>();
+			System.out.println("\nSolucion:");
+
+			NodoEstado nodoSolucion = listaCerrada.get(listaCerrada.size()-1);
+			int paso = 0;
+
+			while(nodoSolucion != null) {	
+
+				solucion.push(nodoSolucion);
+				nodoSolucion = nodoSolucion.prev;
+			}
+
+			String[][] step = new String[st][pl];
+			while(!solucion.isEmpty()) {
+				paso++;
+				System.out.println("\nPaso "+paso +" ");
+				step = solucion.pop().parkingActual;
+				for(int i = 0; i < st; i++){
+					for(int j = 0; j < pl; j++){
+						System.out.print(step[i][j] + " ");
+					}System.out.println("");
+				}
+
+			}
+		}
+	}
+
+	public static String[][] getParking(String path) throws FileNotFoundException{
+		String actual = "";
+		String[][] parking;
+
+		Scanner input = new Scanner(new File(path)); //file reader
+		while(input.hasNext()) {
+			String i = input.next();
+			actual += i;
+		}input.close();
+
+		int st = Character.getNumericValue(actual.charAt(0)); //number of streets
+		int pl = Character.getNumericValue(actual.charAt(1)); //number of parking lots per street
+
+		actual = actual.substring(2); //clear first line of file from String
+		parking = new String[st][pl];
+
+		for(int i = 0; i < st; i++){ //fill up the parking Array
+			for(int j = 0; j < pl; j++){
+				parking[i][j] = actual.substring(0, 2);
+				actual = actual.substring(2);                
+			}   
+		}return parking;
+
+	}
+
+	public static boolean checkExito(String[][] parkingActual, String[][] parkingObjetivo) {
+
+		boolean result = true;
+		for (int i = 0; i < parkingActual.length; i++) {
+			for (int j = 0; j < parkingActual[0].length; j++) {
+				if (parkingActual[i][j].compareTo(parkingObjetivo[i][j]) != 0) {
+					result = false;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static boolean parkingRepetidoEnLista(ArrayList<NodoEstado> lista, String[][] parking){
+
+		boolean repetido = true;
+		if(lista.isEmpty()) return false;
+
+		int numCalles = parking.length;
+		int numPlazas = parking[0].length;
+		for(int posicionLista = 0; posicionLista < lista.size(); posicionLista++)
+			for(int i = 0; i < numCalles; i++){
+				for(int j = 0; j < numPlazas; j++){
+					if(parking[i][j].compareTo(lista.get(posicionLista).parkingActual[i][j]) != 0){
+						repetido = false;
+						break;
+					}
+				}if(repetido) return true;
+			}
+		return repetido;
+	}
+
+	public static void sortArrayList(ArrayList<NodoEstado> lista) {
+		NodoEstado temp;
+
+		for(int i = lista.size()-1; i >= 0; i--) {
+			for(int j = 0; j < i; j++) {
+				if(lista.get(j).EvaluacionValue < lista.get(j + 1).EvaluacionValue) {
+					temp = lista.get(j);
+					lista.set(j, lista.get(j + 1));
+					lista.set(j + 1, temp);
+				}
+			}
+		}
+
+	}
+
+	public static void printLista(ArrayList<NodoEstado> lista){
+		System.out.print("[");
+		for(int posLista = 0; posLista < lista.size(); posLista++){
+			for(int i = 0; i < lista.get(0).parkingActual.length; i++){
+				for(int j = 0; j < lista.get(0).parkingActual[0].length; j++){
+					System.out.print(lista.get(posLista).parkingActual[i][j]+" ");
+				}
+			}System.out.print(" , ");	
+		}System.out.print("]");
+	}
+
+	public static void addAbierta(ArrayList<NodoEstado> lista, NodoEstado nodo) {
+		int cont = 0;
+		while(cont < lista.size() && lista.get(cont).HeuristicaValue < nodo.HeuristicaValue) {
+			cont++;
+		}
+		lista.add(cont, nodo);
+	}
 	
-		                        			   expandir = nodoAEvaluarDuplicate.moverDerecha(l-j, i, j);
-		                        	       
-			                        	         repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoAEvaluarDuplicate.parkingActual);
-			                        	         //repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta, nodoAEvaluarDuplicate.parkingActual);
-			                        	        
-			                        	        //TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
-			                        	        if(expandir && !repetidoEnCerrada) {
-			                        	        	
-			                        	        	nodoAEvaluarDuplicate.printParking();
-			                        	        	printLista(listaCerrada);
-			                        	        	System.out.println("");
-			                        	        	printLista(listaAbierta);
-			                        	        	System.out.println("");
-			                        	        	
-			                        	        	System.out.println("^^^^MOV DERECHA^^^");
-			                        	        	nodoAEvaluarDuplicate.prev = nodoAEvaluar;
-				                        	        //listaAbierta.add(0, nodoAEvaluarDuplicate);
-			                        	        	addAbierta(listaAbierta, nodoAEvaluarDuplicate);
-			                        	        }
-			                        	        
-			                        	        /*Para cada s de S que estuviera ya en ABIERTA o CERRADA
-			                        	        decidir si redirigir o no sus punteros hacia N
-			                        	        Para cada s de S que estuviera ya en CERRADA
-			                        	        decidir si redirigir o no los punteros de los nodos en sus sub�arboles
-			                        	        Reordenar ABIERTA segun f (n)*/
-
-	                        			   }
-	                        	   
-//-----------------------------------------------------------GENERAR ESTADOS DE MOVER A IZDA-------------------------------------------------------------
-		                        		   
-	                        			   if(j>l){
-			                        		   nodoAEvaluarDuplicate = new NodoEstado(nodoAEvaluar);                      	    
-	 
-			                        	        expandir = nodoAEvaluarDuplicate.moverIzda(j-l, i, j);
-			                        	        
-			                        	        
-			                        	        repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoAEvaluarDuplicate.parkingActual);
-			                        	        repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta, nodoAEvaluarDuplicate.parkingActual);
-			                        	        
-			                        	        //TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
-			                        	        if(expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
-			                        	        	
-			                        	        	nodoAEvaluarDuplicate.printParking();
-			                        	        	printLista(listaCerrada);
-			                        	        	System.out.println("");
-			                        	        	printLista(listaAbierta);
-			                        	        	System.out.println("");
-			                        	        	System.out.println("^^^^MOV IZDA^^^");
-			                        	        	nodoAEvaluarDuplicate.prev = listaCerrada.get(0);
-				                        	        //listaAbierta.add(0, nodoAEvaluarDuplicate);
-				                        	        addAbierta(listaAbierta, nodoAEvaluarDuplicate);
-			                        	        }
-			                        	        
-			                        	        
-			                        	        /*Para cada s de S que estuviera ya en ABIERTA o CERRADA
-			                        	        decidir si redirigir o no sus punteros hacia N
-			                        	        Para cada s de S que estuviera ya en CERRADA
-			                        	        decidir si redirigir o no los punteros de los nodos en sus sub�arboles
-			                        	        Reordenar ABIERTA segun f (n)*/          	   
-	                        			   }
-		                        		}
-//------------------------------------------------------GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO DE CARA---------------------------------------------------
-		                        	if(l == 0) { //fijamos las posiciones
-		                        	   
-		                        		nodoAEvaluarDuplicate = new NodoEstado(nodoAEvaluar);
-		                       	      	expandir = nodoAEvaluarDuplicate.moverCallePrincipio(k, i, j);
-		                       	        
-		                       	        
-		                       	        repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoAEvaluarDuplicate.parkingActual);
-		                       	     	repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta, nodoAEvaluarDuplicate.parkingActual);
-		                       	     	
-		                       	     //TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
-	                     	        	if(expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
-	                     	        		
-	                     	        		nodoAEvaluarDuplicate.printParking();
-	                     	        		printLista(listaCerrada);
-	                     	        		System.out.println("");
-	                        	        	printLista(listaAbierta);
-	                        	        	System.out.println("");
-	                     	        		System.out.println("^^^^ENTRADA DELANTE^^^");
-	                     	        		nodoAEvaluarDuplicate.prev = listaCerrada.get(0);
-			                        	    //listaAbierta.add(0, nodoAEvaluarDuplicate);
-			                        	    addAbierta(listaAbierta, nodoAEvaluarDuplicate);
-		                       	        }
-		                        	}
-//--------------------------------------------------------GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO MARCHA ATRAS-----------------------------------------
-		                           
-		                        	if(l == 0) {
-		                        	   nodoAEvaluarDuplicate = new NodoEstado(nodoAEvaluar);
-		                       	        expandir = nodoAEvaluarDuplicate.moverCalleFinal(k, i, j);
-		                       	        
-		                       	        
-		                       	        repetidoEnCerrada = parkingRepetidoEnLista(listaCerrada, nodoAEvaluarDuplicate.parkingActual);
-		                       	        repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta, nodoAEvaluarDuplicate.parkingActual);
-	                     	        
-		                       	        //TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
-	                     	        	if(expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
-	                     	        		
-	                     	        		nodoAEvaluarDuplicate.printParking();
-	                     	        		printLista(listaCerrada);
-	                     	        		System.out.println("");
-	                        	        	printLista(listaAbierta);
-	                        	        	System.out.println("");
-	                     	        		System.out.println("^^^^ENTRADA DETRAS^^^");
-	                     	        		nodoAEvaluarDuplicate.prev = listaCerrada.get(listaCerrada.size()-1);
-			                        	    //listaAbierta.add(0, nodoAEvaluarDuplicate);
-			                        	    addAbierta(listaAbierta, nodoAEvaluarDuplicate);
-		                       	        }
-		                           } 
-		                        	
-		                        	
-	                        	   }
-	                           
-	                           }
-	                           
-                            }
-                            
-                        }       
-                }
-                
-                sortArrayList(listaAbierta);
-            }
-        //end of while
-        if(exito){
-        	Stack<NodoEstado> solucion = new Stack<NodoEstado>();
-        	System.out.println("\nSolucion:");
-        	
-        	NodoEstado nodoSolucion = listaCerrada.get(listaCerrada.size()-1);
-        	int paso = 0;
-        	
-        	while(nodoSolucion != null) {	
-        		
-            	solucion.push(nodoSolucion);
-            	nodoSolucion = nodoSolucion.prev;
-        	}
-        	
-        	NodoEstado step = new NodoEstado();
-        	while(!solucion.isEmpty()) {
-        		paso++;
-        		System.out.println("\nPaso "+paso +" ");
-            	step = solucion.pop();
-            	for(int i = 0; i < st; i++){
-            		for(int j = 0; j < pl; j++){
-            			System.out.print(step.parkingActual[i][j].car + " ");
-            		}System.out.println("");
-            	}
-            	
-        	}
-        }
-    }
-
-    public static boolean checkExito(Coche[][] parkingActual, Coche[][] parkingObjetivo) {
-
-        boolean result = true;
-        for (int i = 0; i < parkingActual.length; i++) {
-            for (int j = 0; j < parkingActual[0].length; j++) {
-                if (parkingActual[i][j].car.compareTo(parkingObjetivo[i][j].car) != 0) {
-                    result = false;
-                }
-            }
-        }
-        return result;
-    }
-    
-    public static boolean parkingRepetidoEnLista(ArrayList<NodoEstado> lista, Coche[][] parking){
-    	
-    	boolean repetido = true;
-    	if(lista.isEmpty()) return false;
-    	
-    	int numCalles = parking.length;
-    	int numPlazas = parking[0].length;
-    	for(int posicionLista = 0; posicionLista < lista.size(); posicionLista++)
-	    	for(int i = 0; i < numCalles; i++){
-	    		for(int j = 0; j < numPlazas; j++){
-	    			if(parking[i][j].car.compareTo(lista.get(posicionLista).parkingActual[i][j].car) != 0){
-	    				repetido = false;
-	    				break;
-	    			}
-	    		}if(repetido) return true;
-	    	}
-    	return repetido;
-    }
-    
-    
-    public static void sortArrayList(ArrayList<NodoEstado> lista) {
-        int n = lista.size();
-        NodoEstado temp;
-        
-        for(int i = lista.size()-1; i >= 0; i--) {
-            for(int j = 0; j < i; j++) {
-                if(lista.get(j).EvaluacionValue < lista.get(j + 1).EvaluacionValue) {
-                    temp = lista.get(j);
-                    lista.set(j, lista.get(j + 1));
-                    lista.set(j + 1, temp);
-                }
-            }
-        }
-        
-    }
-    public static void printLista(ArrayList<NodoEstado> lista){
-    	System.out.print("[");
-    	for(int posLista = 0; posLista < lista.size(); posLista++){
-    		for(int i = 0; i < lista.get(0).parkingActual.length; i++){
-    			for(int j = 0; j < lista.get(0).parkingActual[0].length; j++){
-    				System.out.print(lista.get(posLista).parkingActual[i][j].car+" ");
-    			}
-    
-    		}	
-    	}
-    	System.out.print("]");
-    }
-    
-    public static void addAbierta(ArrayList<NodoEstado> lista, NodoEstado nodo) {
-    	int cont = 0;
-    	while(cont < lista.size() && lista.get(cont).HeuristicaValue < nodo.HeuristicaValue) {
-    		cont++;
-    	}
-    	lista.add(cont, nodo);
-    }
+	public static boolean addCerrada(ArrayList<NodoEstado> lista, NodoEstado nodo) {
+		int cont = 0;
+		while(cont < lista.size()) {
+			if(equalNode(nodo, lista.get(cont))) return false;
+				cont++;
+		}
+		lista.add(nodo);
+		return true;
+	}
+	
+	public static boolean equalNode(NodoEstado nodo1, NodoEstado nodo2){
+		for(int i = 0; i<nodo1.parkingActual.length; i++ ) {
+			for(int j = 0; j<nodo1.parkingActual[0].length; j++ ) {
+				if(nodo1.parkingActual[i][j].compareTo(nodo2.parkingActual[i][j]) != 0) return false; 
+			}
+		}
+		return true;
+	}
 
 }
