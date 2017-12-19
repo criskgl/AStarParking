@@ -104,7 +104,7 @@ public class NodoEstado implements Cloneable{
 	//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ADELANTE 
 	public boolean moverCallePrincipio(int calleObjetivo, int calle, int plaza){
 
-		if((parkingActual[calle][plaza].compareTo("__") == 0) && plaza != numPlazas-1) return false; //comprobar que la casilla que se va a intentar mover no es un espacio vacio
+		if((parkingActual[calle][plaza].compareTo("__") == 0) || plaza != numPlazas-1) return false; //comprobar que la casilla que se va a intentar mover no es un espacio vacio
 		if(parkingActual[calleObjetivo][0].compareTo("__") != 0) return false; 
 
 		cambiarPos(calle, plaza, calleObjetivo, 0);
@@ -118,7 +118,7 @@ public class NodoEstado implements Cloneable{
 	//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ATRAS 
 	public boolean moverCalleFinal(int calleObjetivo, int calle, int plaza){
 
-		if((parkingActual[calle][plaza].compareTo("__") == 0 )&& plaza == 0) return false; //comprobar que la casilla que se va a intentar mover no es un espacio vacio
+		if((parkingActual[calle][plaza].compareTo("__") == 0 ) || plaza != 0) return false; //comprobar que la casilla que se va a intentar mover no es un espacio vacio
 		if(parkingActual[calleObjetivo][numPlazas-1].compareTo("__") != 0) return false;
 
 		cambiarPos(calle, plaza, calleObjetivo, numPlazas-1);
@@ -131,10 +131,10 @@ public class NodoEstado implements Cloneable{
 
 	public void cambiarPos(int CalleInicial, int PlazaInicial, int CalleFinal,int PlazaFinal){//mueve un coche una posicion FINAL
 		
-		this.calleInicial = calleInicial+1; //variables para impresion del fichero
-		this.plazaInicial = plazaInicial+1;
-		this.calleFinal = calleFinal+1;
-		this.plazaFinal = plazaFinal+1;
+		this.calleInicial = CalleInicial; //variables para impresion del fichero
+		this.plazaInicial = PlazaInicial;
+		this.calleFinal = CalleFinal;
+		this.plazaFinal = PlazaFinal;
 		
 		parkingActual[CalleFinal][PlazaFinal] = parkingActual[CalleInicial][PlazaInicial];
 		parkingActual[CalleInicial][PlazaInicial] = "__";

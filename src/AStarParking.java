@@ -136,7 +136,6 @@ public class AStarParking {
 										repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta,
 												nodoExpandir.parkingActual);
 
-										//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
 										if (expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
 											System.out.println("\n----ENTRADA DELANTE----");
 											nodoExpandir.printParking();
@@ -152,7 +151,7 @@ public class AStarParking {
 
 									//--------------------------------------------------------GENERAR ESTADOS DE CAMBIAR DE CALLE ENTRANDO MARCHA ATRAS-----------------------------------------
 
-									if (l == 0) {
+									if (l == 0) { //fijamos las posiciones
 										nodoExpandir = new NodoEstado(nodoAEvaluar);
 										nodosExpandidos++;
 										expandir = nodoExpandir.moverCalleFinal(k, i, j);
@@ -162,7 +161,6 @@ public class AStarParking {
 										repetidoEnAbierta = parkingRepetidoEnLista(listaAbierta,
 												nodoExpandir.parkingActual);
 
-										//TODO Si se repiten nodos comprobar que estamos cogiendo el nodo con menos coste
 										if (expandir && !repetidoEnCerrada && !repetidoEnAbierta) {
 											System.out.println("\n----ENTRADA DETRAS----");
 											nodoExpandir.printParking();
@@ -210,9 +208,10 @@ public class AStarParking {
 				paso++;
 				out.write(paso +",");
 				step = solucion.pop();
-				out.write(step.parkingActual[step.calleInicial][step.plazaInicial] + ",");
-				out.write("L"+step.calleInicial+" "+"P"+step.plazaInicial+ ", ");
-				out.write("L"+step.calleFinal+" "+"P"+step.plazaFinal+ ", ");
+				coste = step.costeActual;
+				out.write(step.parkingActual[step.calleFinal][step.plazaFinal] + ",");
+				out.write("L"+(step.calleInicial+1)+" "+"P"+(step.plazaInicial+1)+ ", ");
+				out.write("L"+(step.calleFinal+1)+" "+"P"+(step.plazaFinal+1)+ ", ");
 				out.write(step.costeMovimiento + "\n");
 				
 				System.out.println(paso);
