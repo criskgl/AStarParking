@@ -67,7 +67,10 @@ public class NodoEstado implements Cloneable{
 		
 			boolean libre = true;
 			
-			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) {
+				getHeuristicValue();
+				return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			}
 			
 			//No podemos movernos a derecha estando en un extremo
 			if(plaza + movimientos < numPlazas){
@@ -79,13 +82,13 @@ public class NodoEstado implements Cloneable{
 						}
 				}
 				if(libre){//mover Derecha
-					cambiarPos(plaza, calle, calle, plaza+movimientos);
+					cambiarPos(calle, plaza, calle, plaza+movimientos);
 					costeActual = this.costeActual + 1;//añadir al coste acumulado el coste de mover a derecha(1)
 					//recalcular heuristica
-					getHeuristicValue();
+					
 				}
 			}
-			
+			getHeuristicValue();
 			return libre;
 		
 		}
@@ -95,55 +98,72 @@ public class NodoEstado implements Cloneable{
 			boolean libre = true;
 			//No podemos movernos a derecha estando en un extremo
 			
-			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) {
+				getHeuristicValue();
+				return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			}
+			if(parkingActual[calle][plaza-movimientos].car.compareTo("__") != 0) {
+				getHeuristicValue();
+				return false;
+			}
 			
-			if(plaza - movimientos >= numPlazas){
+			if(plaza - movimientos >= 0){
 				
-				for(int i = plaza; i >= plaza-movimientos; i--){
+				for(int i = plaza-1; i > plaza-movimientos; i--){
 						if(parkingActual[calle][i].car.compareTo("__") != 0){
 							libre = false;
 							break;
 						}
 				}
 				if(libre){//mover Izda
-					cambiarPos(plaza, calle, calle, plaza-movimientos);
+					cambiarPos(calle, plaza, calle,  plaza-movimientos);
 					costeActual = this.prev.costeActual + 2;//añadir al coste acumulado el coste de mover a izda(2)
 				}
 			}
-			
+			getHeuristicValue();
 			return libre;
 		}
 		//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ADELANTE !DECISION DE IMPLEMENTACION MEMORIA!!!
 		public boolean moverCallePrincipio(int calleObjetivo, int calle, int plaza){
 			
-			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) {
+				getHeuristicValue();
+				return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			}
 			
 			if(plaza == numPlazas-1 && parkingActual[calleObjetivo][0].car.compareTo("__") == 0){// si el coche está al final de la calle...
-				cambiarPos(plaza, calle, calleObjetivo, 0);
+				cambiarPos(calle, plaza, calleObjetivo, 0);
 				costeActual = this.prev.costeActual + 3;//añadir al coste acumulado (3)
+				getHeuristicValue();
 				return true;
 			}
+			getHeuristicValue();
 			return false;
 		}
 		
 		//OPERADOR PARA MOVER A OTRA CALLE ENTRADO HACIA ATRAS 
 		public boolean moverCalleFinal(int calleObjetivo, int calle, int plaza){
 			
-			if(parkingActual[calle][plaza].car.compareTo("__") == 0) return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			if(parkingActual[calle][plaza].car.compareTo("__") == 0) {
+				getHeuristicValue();
+				return false;//comprobar que la casilla que se va a intentar mover no es un espacio vacio
+			}
 			
 			if(plaza == 0 && parkingActual[calleObjetivo][numPlazas-1].car.compareTo("__") == 0){// si el coche está al inicio de la calle...
 				cambiarPos(calle, plaza, calleObjetivo, numPlazas-1);
 				this.costeActual = this.prev.costeActual + 4;//añadir al coste acumulado el coste de mover a izda(4)
+				getHeuristicValue();
 				return true;
 			}
+			getHeuristicValue();
 			return false;
 		}
 		
-		public void cambiarPos(int filaInicial, int colInicial, int filaFinal,int colFinal){//mueve un coche una posicion FINAL
+		public void cambiarPos(int CalleInicial, int PlazaInicial, int CalleFinal,int PlazaFinal){//mueve un coche una posicion FINAL
 			
-			parkingActual[filaFinal][colFinal].car = parkingActual[filaInicial][colInicial].car;
+			parkingActual[CalleFinal][PlazaFinal].car = parkingActual[CalleInicial][PlazaInicial].car;
 			
-			parkingActual[filaInicial][colInicial].car = "__";
+			parkingActual[CalleInicial][PlazaInicial].car = "__";
 		}
 		
 		public void getHeuristicValue()//Depende de los coches bien colocados
